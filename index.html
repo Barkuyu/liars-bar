@@ -9,7 +9,6 @@ document.addEventListener('dblclick',p,s);
 addEventListener('wheel',function(e){if(e.ctrlKey)e.preventDefault()},s);
 addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&/^[=+\-0]$/.test(e.key))e.preventDefault()});})();</script>
 
-
 <title>騙子酒吧 Liar's Bar — 吹牛・抓謊・扣扳機</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;900&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
@@ -289,6 +288,88 @@ body.m3d .ov,body.m3d #logp{pointer-events:auto}
 #bloodfx .dr{position:absolute;top:-4vh;background:linear-gradient(180deg,#5a0208,#8f0b13 80%,#a31019);border-radius:0 0 50% 50%/0 0 22px 22px;transform-origin:top;transform:scaleY(0);opacity:.92;animation:dr 4.6s cubic-bezier(.3,.1,.6,1) forwards}
 @keyframes bv{0%{opacity:0}6%{opacity:1}55%{opacity:.8}100%{opacity:0}}
 @keyframes dr{0%{transform:scaleY(0);opacity:.95}70%{transform:scaleY(1);opacity:.9}100%{transform:scaleY(1.05);opacity:0}}
+
+/* ===== mobile layout fixes ===== */
+:root{--st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px)}
+html,body{height:100%;height:100dvh;overscroll-behavior:none}
+#app{height:100vh;height:100dvh}
+button{touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.screen{-webkit-overflow-scrolling:touch}
+/* touch devices: no sticky hover, no pointer tilt */
+@media (hover:none){
+  .bigbtn:hover{transform:none;border-color:rgba(255,196,130,.42);box-shadow:inset 0 1px 0 rgba(255,226,180,.4),inset 0 -3px 0 rgba(0,0,0,.5),0 9px 0 #1a0805,0 20px 38px rgba(0,0,0,.7)}
+  .bigbtn:hover::before{left:-30%}
+  .bigbtn:active{transform:translateY(5px)}
+  .btn:hover,.chip:hover,.tools button:hover{border-color:#8a5230}
+  .sign,.menu-card{transform:none!important;transition:none}
+}
+@media (max-width:760px){
+  /* --- menu --- */
+  #s-menu{justify-content:flex-start;padding:calc(4vh + var(--st)) 14px calc(2vh + var(--sb));overflow-y:auto}
+  #s-menu .sign .en{font-size:clamp(34px,11.5vw,58px)}
+  #s-menu .sign .zh{font-size:clamp(16px,5vw,22px);margin-top:8px}
+  #s-menu .sign .sub{font-size:12px;margin-top:10px;letter-spacing:.18em}
+  .menu-card{margin-top:auto;width:100%;max-width:520px;grid-template-columns:minmax(0,1fr);gap:10px;padding-top:16px}
+  .menu-card>*{min-width:0}
+  .namebox{width:100%;max-width:none;padding:8px 12px}
+  .bigbtn{width:100%;min-width:0;white-space:normal;padding:12px 14px;gap:12px}
+  .bigbtn>span:last-child{min-width:0;flex:1}
+  .bigbtn .ic{width:46px;height:46px;font-size:22px}
+  .bigbtn b{font-size:20px}
+  .bigbtn small{font-size:12px;line-height:1.4}
+  .fine{margin-top:10px;font-size:11px;line-height:1.5}
+  /* --- setup / mp / lobby panels --- */
+  #s-solo,#s-mp,#s-lobby{justify-content:flex-start;padding:calc(14px + var(--st)) 12px calc(14px + var(--sb))}
+  .panel{margin:auto 0;padding:16px}
+  .codebox{font-size:30px;padding:6px 12px}
+  .slots{gap:8px}.slot{padding:10px;min-height:80px}
+  #lb-hostbtns{width:100%}#lb-hostbtns .btn{flex:1}
+  /* --- game HUD --- */
+  body.m3d #topbar{flex-direction:column;align-items:stretch;gap:6px;padding:calc(6px + var(--st)) 8px 0}
+  body.m3d #banner{width:100%;padding:4px 10px}
+  body.m3d #banner>div{display:flex;align-items:baseline;gap:8px;min-width:0;width:100%}
+  body.m3d #banner .rank{font-size:14px;white-space:nowrap;flex:none}
+  body.m3d #banner small{display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  body.m3d .tools{justify-content:space-between;gap:5px;flex-wrap:nowrap}
+  body.m3d .tools button{flex:1;padding:7px 4px;font-size:12px;min-height:34px;white-space:nowrap}
+  body.m3d #hint{position:fixed;top:calc(var(--st) + 96px);left:50%;transform:translateX(-50%);width:max-content;max-width:92vw;font-size:12.5px;line-height:1.45;padding:6px 12px;border-radius:14px}
+  body.m3d #bottom{padding:0}
+  body.m3d #actions{position:absolute;left:10px;right:10px;top:auto;bottom:calc(10px + var(--sb));width:auto;min-width:0;flex-direction:row;gap:10px}
+  body.m3d #actions .btn{flex:1;width:auto;min-height:48px;padding:10px 6px;font-size:16px}
+  body.m3d #actions kbd{display:none}
+  body.m3d #mine{position:absolute;left:50%;right:auto;top:auto;bottom:calc(68px + var(--sb));transform:translateX(-50%);flex-direction:row;align-items:center;gap:6px;min-width:0;padding:3px 12px 3px 8px;border-radius:99px}
+  body.m3d #mine .av{font-size:24px}
+  body.m3d #mine .plate{flex-direction:row;gap:8px;padding:0;background:transparent;border:0;box-shadow:none}
+  body.m3d #mine .nm{font-size:12px}
+  body.m3d #logp{top:calc(var(--st) + 96px);right:8px;left:8px;width:auto;max-height:50%}
+  body.m3d .np .plate{padding:3px 8px;gap:3px}
+  body.m3d .np .nm{font-size:11.5px}
+  body.m3d #claim{font-size:12.5px;max-width:90vw;white-space:normal}
+  .cap h3{font-size:clamp(18px,5.4vw,26px)}
+  .cap .sub{font-size:12.5px}
+  .cap{bottom:calc(9vh + 70px + var(--sb))}
+}
+/* landscape phones */
+@media (max-height:520px) and (min-width:500px){
+  #s-menu{padding-top:calc(2vh + var(--st))}
+  #s-menu .sign .en{font-size:34px}#s-menu .sign .zh{font-size:15px;margin-top:4px}#s-menu .sign .sub{display:none}
+  .menu-card{grid-template-columns:1fr 1fr;margin-top:10px;padding-top:0}
+  .bigbtn small{display:none}
+  .fine{display:none}
+  body.m3d #topbar{flex-direction:row;align-items:center}
+  body.m3d #banner{width:auto}
+  body.m3d .tools{flex:none}body.m3d .tools button{flex:none;padding:6px 10px}
+  body.m3d #hint{top:calc(var(--st) + 52px)}
+  body.m3d #actions{left:auto;right:12px;width:150px;flex-direction:column;gap:8px}
+  body.m3d #actions .btn{min-height:40px}
+  body.m3d #mine{left:12px;transform:none;bottom:calc(10px + var(--sb))}
+  .cap{bottom:calc(9vh + 12px)}
+}
+@media (max-width:760px){
+  .roundbanner{width:92vw}
+  .roundbanner .big{font-size:clamp(22px,7vw,34px);letter-spacing:.04em;line-height:1.25}
+  .roundbanner .small{font-size:13px}
+}
 </style><meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -1131,7 +1212,7 @@ const G3 = (function () {
   /* ---------- camera ---------- */
   function camGoal(out) {
     const mode = cm.mode, tt = time - cm.t0;
-    if (mode === 'menu') { const a = Math.sin(tt * .09) * .72 + pointer.x * .14; out.p.set(Math.sin(a) * 6.0, 2.55 + Math.sin(tt * .13) * .14 - pointer.y * .12, Math.cos(a) * 6.0); out.l.set(0, 1.12, 0); out.f = 44; return; }
+    if (mode === 'menu') { const a = Math.sin(tt * .09) * .72 + pointer.x * .14; out.p.set(Math.sin(a) * 6.0, 2.55 + Math.sin(tt * .13) * .14 - pointer.y * .12, Math.cos(a) * 6.0); const asp = cam.aspect || 1; if (asp < 1) { out.l.set(0, .6, 0); out.f = Math.min(78, 2 * Math.atan(.36 / asp) * 180 / PI); } else { out.l.set(0, 1.12, 0); out.f = 44; } return; }
     if (mode === 'shot' && frames[cm.seat]) { const pull = M.clamp(tt / 5, 0, 1) * .35; const p = seatWorld(cm.seat, new V(-.62, 1.74, 1.95 - pull)), l = seatWorld(cm.seat, new V(-.2, 1.58, 0)); out.p.copy(p); out.l.copy(l); out.f = 36 - Math.min(6, tt * 1.4); return; }
     if (mode === 'reveal') { out.p.set(.55, 2.35, 2.2); out.l.set(0, TY, 0); out.f = 46; return; }
     if (mode === 'over' && frames[cm.seat]) { const a = tt * .12; const hw = headWorld(cm.seat); out.p.set(hw.x * .55 + Math.sin(a) * 1.2, 1.9, hw.z * .55 + 1.9 * Math.sign(hw.z || 1) * .8 + Math.cos(a) * .6); out.l.copy(hw); out.f = 48; return; }
