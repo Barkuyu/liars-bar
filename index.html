@@ -9,7 +9,6 @@ document.addEventListener('dblclick',p,s);
 addEventListener('wheel',function(e){if(e.ctrlKey)e.preventDefault()},s);
 addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&/^[=+\-0]$/.test(e.key))e.preventDefault()});})();</script>
 
-
 <title>騙子酒吧 Liar's Bar — 吹牛・抓謊・扣扳機</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;900&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
@@ -371,6 +370,39 @@ button{touch-action:manipulation;-webkit-user-select:none;user-select:none}
   .roundbanner .big{font-size:clamp(22px,7vw,34px);letter-spacing:.04em;line-height:1.25}
   .roundbanner .small{font-size:13px}
 }
+
+/* ===== lobby / room-code layout fixes ===== */
+.slot .who{font-size:16px;filter:none;transition:none;width:100%;min-width:0}
+.slot .who>div{min-width:0}
+.slot .nm{font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:4px}
+.slot{min-width:0;align-items:stretch;text-align:left}
+.slot.empty{align-items:center;text-align:center}
+.slot .btn{width:100%}
+.slots{grid-template-columns:repeat(2,minmax(0,1fr))}
+.panel{max-width:100%;margin-left:auto;margin-right:auto}
+.panel>.row{justify-content:center}
+.panel h2{text-align:center}
+.codebox{display:block;text-align:center;margin:6px auto 0;letter-spacing:.35em;padding:8px 8px 8px calc(8px + .35em)}
+#s-lobby .panel>.row:first-of-type{flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center}
+.mpbox{display:flex;flex-direction:column;gap:8px;background:rgba(0,0,0,.22);border:1px solid rgba(255,190,120,.2);border-radius:12px;padding:12px}
+.mpbox .lbl{font-size:13px;opacity:.75;text-align:center}
+.mpbox .mprow{margin:0;flex-wrap:nowrap;justify-content:center}
+.mpbox .btn.wide{width:100%}
+input.codein{flex:1;min-width:0;max-width:170px;text-align:center;letter-spacing:.4em;font-size:24px;padding:6px 0 6px .4em;font-variant-numeric:tabular-nums;border:1px solid #7b4a30;border-radius:10px;background:rgba(0,0,0,.3)}
+.or{opacity:.55;margin:10px 0;font-size:13px;text-align:center;letter-spacing:.3em}
+#lb-hostbtns{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+#s-lobby .panel>.row:last-of-type{flex-direction:column;align-items:stretch}
+#s-lobby .panel>.row:last-of-type>.btn{width:100%}
+#lb-hostbtns .btn{flex:1;min-width:140px}
+#lb-status{text-align:center}
+
+.slot .nm{overflow:visible;white-space:normal;flex-wrap:wrap;row-gap:4px;line-height:1.3;word-break:break-all}
+.slot .nm .tag{margin-left:0;white-space:nowrap}
+input.codein::placeholder{opacity:.35;letter-spacing:.4em}
+#s-lobby .panel>.row:last-of-type{display:flex;flex-direction:column-reverse;gap:10px;align-items:stretch}
+#lb-hostbtns{flex-direction:column-reverse;flex-wrap:nowrap;width:100%;gap:10px}
+#lb-hostbtns .btn{width:100%;min-width:0;white-space:nowrap}
+.slot .who{align-items:center}
 </style><meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -412,9 +444,16 @@ button{touch-action:manipulation;-webkit-user-select:none;user-select:none}
   <section id="s-mp" class="screen">
     <div class="panel">
       <h2>多人模式</h2>
-      <div class="row"><button class="btn primary" id="mp-create">🏠 建立房間（當房主）</button></div>
-      <div style="opacity:.6;margin:14px 0 4px;font-size:13px">——— 或 ———</div>
-      <div class="row"><input id="mp-code" class="txt" style="max-width:150px;text-transform:uppercase;letter-spacing:.25em;font-size:22px" maxlength="4" placeholder="房號" autocomplete="off"><button class="btn" id="mp-join">加入房間</button></div>
+      <div class="mpbox">
+        <div class="lbl">自訂房號（4 位數字，留空則隨機產生）</div>
+        <div class="row mprow"><input id="mp-newcode" class="txt codein" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="0000" autocomplete="off"><button class="btn sm" id="mp-rand" type="button">🎲 隨機</button></div>
+        <button class="btn primary wide" id="mp-create">🏠 建立房間（當房主）</button>
+      </div>
+      <div class="or">或</div>
+      <div class="mpbox">
+        <div class="lbl">加入朋友的房間</div>
+        <div class="row mprow"><input id="mp-code" class="txt codein" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="0000" autocomplete="off"><button class="btn" id="mp-join">加入房間</button></div>
+      </div>
       <div class="status" id="mp-status"></div>
       <div class="row" style="justify-content:space-between;margin-top:10px"><button class="btn" data-go="menu">← 返回</button></div>
     </div>
@@ -1403,6 +1442,7 @@ function peerErr(t) {
     notfound: '找不到這個房號，請確認房號與房主是否還在線上。',
     full: '房間已滿，或遊戲已經開始了。',
     'network': '網路錯誤，請稍後再試。',
+    'unavailable-id': '這個房號已經有人在用了，請換一組 4 位數字。',
   };
   return m[t] || `連線失敗（${t}）。`;
 }
@@ -1447,7 +1487,8 @@ function joinRoom(code, name, cb) {
   peer.on('error', e => { if (!got) fail(e.type === 'peer-unavailable' ? 'notfound' : (e.type || 'error')); else cb.onClose(); });
   return { send: m => { try { conn && conn.open && conn.send(m); } catch (e) { } }, close: () => { try { peer.destroy(); } catch (e) { } } };
 }
-function randomCode() { const a = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s = ''; for (let i = 0; i < 4; i++) s += a[Math.floor(Math.random() * a.length)]; return s; }
+function randomCode() { return String(Math.floor(Math.random() * 10000)).padStart(4, '0'); }
+const digits4 = el => { el.value = el.value.replace(/\D/g, '').slice(0, 4); };
 function mpStatus(t, err) { const e = $('#mp-status'); e.textContent = t || ''; e.classList.toggle('err', !!err); }
 
 /* ---------- menu wiring ---------- */
@@ -1467,19 +1508,21 @@ $('#solo-start').onclick = () => {
 $('#mp-create').onclick = () => {
   mpStatus('正在連線到 PeerJS 伺服器…');
   const name = getName(); let tries = 0;
+  const want = ($('#mp-newcode').value || '').trim();
+  if (want && !/^\d{4}$/.test(want)) { mpStatus('房號必須是 4 位數字（0000～9999）。', true); return; }
   const attempt = () => {
-    const host = new Host(onView); host.code = randomCode(); host.addLocal(name);
+    const host = new Host(onView); host.code = want || randomCode(); host.addLocal(name);
     ctx = { mode: 'host', host };
     ctx.peer = openRoom(host, host.code, {
       onReady: peer => { ctx.peer = peer; lastSeq = -1; host.refresh(); },
-      onError: t => { try { host.close(); } catch (e) { } if (t === 'unavailable-id' && ++tries < 4) return attempt(); ctx = null; mpStatus(peerErr(t), true); },
+      onError: t => { try { host.close(); } catch (e) { } if (t === 'unavailable-id' && !want && ++tries < 4) return attempt(); ctx = null; mpStatus(peerErr(t), true); },
     });
   };
   attempt();
 };
 $('#mp-join').onclick = () => {
-  const code = ($('#mp-code').value || '').trim().toUpperCase();
-  if (code.length !== 4) { mpStatus('請輸入 4 碼房號。', true); return; }
+  const code = ($('#mp-code').value || '').trim();
+  if (!/^\d{4}$/.test(code)) { mpStatus('請輸入 4 位數字房號。', true); return; }
   mpStatus('正在尋找房間…'); const name = getName();
   const net = joinRoom(code, name, {
     onJoined: () => { lastSeq = -1; mpStatus(''); },
@@ -1745,6 +1788,11 @@ function bloodFx() {
   for (let i = 0; i < 9; i++) { const x = 6 + i * 11 + Math.random() * 6, w = 10 + Math.random() * 16, len = 24 + Math.random() * 40, dl = Math.random() * .5; h += `<b class="dr" style="left:${x}%;width:${w}px;height:${len}vh;animation-delay:${dl.toFixed(2)}s"></b>`; }
   d.innerHTML = h; $('#app').appendChild(d); setTimeout(() => d.remove(), 6200);
 }
+
+$('#mp-newcode').addEventListener('input', e => digits4(e.target));
+$('#mp-code').addEventListener('input', e => digits4(e.target));
+$('#mp-rand').onclick = () => { $('#mp-newcode').value = randomCode(); };
+$('#mp-newcode').addEventListener('keydown', e => { if (e.key === 'Enter') $('#mp-create').click(); });
 
 </script><script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}</script>
 </body></html>
