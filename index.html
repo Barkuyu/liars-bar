@@ -403,6 +403,18 @@ input.codein::placeholder{opacity:.35;letter-spacing:.4em}
 #lb-hostbtns{flex-direction:column-reverse;flex-wrap:nowrap;width:100%;gap:10px}
 #lb-hostbtns .btn{width:100%;min-width:0;white-space:nowrap}
 .slot .who{align-items:center}
+
+/* ===== desktop HUD polish ===== */
+@media (min-width:761px){
+  body.m3d #topbar{align-items:flex-start;padding:10px 14px}
+  body.m3d #banner>div{display:flex;align-items:baseline;gap:10px;white-space:nowrap}
+  body.m3d #banner small{display:inline;font-size:12px;opacity:.75}
+  body.m3d #banner .rank{font-size:18px}
+  body.m3d #banner{padding:6px 14px}
+  body.m3d #hint{top:62px}
+}
+body.m3d .np{z-index:2}
+body.m3d #claim{z-index:3;font-size:15px}
 </style><meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -1316,16 +1328,22 @@ const G3 = (function () {
     });
   }
   const tmp2 = new V(), tmp3 = new V();
+  let safeTop = 0, safeBot = 0, safeTick = 0;
+  function measureSafe() {
+    let t = 0; document.querySelectorAll('#topbar > *, #hint').forEach(e => { if (!e.offsetParent && getComputedStyle(e).position !== 'fixed') return; const r = e.getBoundingClientRect(); if (r.height < 2 || r.width < 2) return; if (r.top < ch_ * .4) t = Math.max(t, r.bottom); });
+    safeTop = t ? t + 8 : 0; safeBot = 0;
+  }
   function updatePlates() {
     if (!curV || !plateRoot) return;
     if (curV.demo) { if (claimEl) claimEl.style.display = 'none'; return; } if (claimEl) claimEl.style.display = '';
     const w = cw, h = ch_;
+    if (++safeTick % 20 === 1) measureSafe();
     plates.forEach((p, i) => {
       if (!p) return; const s = curV.seats[i]; if (!s) return; const sig = [s.name, s.pulls, s.hand, s.alive, s.kind, curV.phase === 'turn' && curV.turn === i].join('|');
       if (sig !== p.sig) { p.sig = sig; let ch = ''; for (let k = 0; k < 6; k++) ch += `<i class="${k < s.pulls ? (!s.alive && k === s.pulls - 1 ? 'dead' : 'spent') : ''}"></i>`; p.el.className = 'np' + (curV.phase === 'turn' && curV.turn === i ? ' turn' : '') + (!s.alive ? ' dead' : ''); p.el.innerHTML = `<div class="plate"><div class="nm">${esc(s.name)}${s.kind === 'bot' ? '<span class="tag bot">AI</span>' : ''}${s.alive ? `<span class="tag">🂠 ${s.hand}</span>` : ' 💀'}</div><div class="cham">${ch}</div></div>`; }
-      const hp = headWorld(i); hp.y += .62; hp.project(cam); const on = hp.z < 1; p.el.style.display = on ? '' : 'none'; p.el.style.transform = `translate(${Math.round((hp.x * .5 + .5) * w)}px,${Math.round((-hp.y * .5 + .5) * h)}px) translate(-50%,-100%)`;
+      const hp = headWorld(i); hp.y += .4; hp.project(cam); const on = hp.z < 1; p.el.style.display = on ? '' : 'none'; if (!on) return; const pw = p.el.offsetWidth || 120, ph = p.el.offsetHeight || 48; let px = (hp.x * .5 + .5) * w, py = (-hp.y * .5 + .5) * h; px = M.clamp(px, pw / 2 + 6, w - pw / 2 - 6); py = Math.max(py, safeTop + ph); py = Math.min(py, h - safeBot); p.el.style.transform = `translate(${Math.round(px)}px,${Math.round(py)}px) translate(-50%,-100%)`;
     });
-    if (claimEl) { const cp = new V(0, TY + .55, 0).project(cam); claimEl.style.left = Math.round((cp.x * .5 + .5) * w) + 'px'; claimEl.style.top = Math.round((-cp.y * .5 + .5) * h) + 'px'; }
+    if (claimEl) { const cp = new V(0, TY + .03, .66).project(cam); claimEl.style.left = Math.round((cp.x * .5 + .5) * w) + 'px'; claimEl.style.top = Math.round((-cp.y * .5 + .5) * h) + 'px'; }
   }
   const blood = [];
   function bloodBurst(seat) {
