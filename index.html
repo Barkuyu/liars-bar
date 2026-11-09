@@ -915,9 +915,13 @@ class Game {
       s.pulls++;
       if (this.shot.dead) { s.alive = false; this.say(`砰！${s.name} 中彈出局。`); }
       else this.say(`喀……${s.name} 空膛（已扣 ${s.pulls}/${CHAMBERS} 次）。`);
+      const humans = this.seats.filter(x => x.kind === 'human');
       if (this.aliveCount() <= 1) {
         this.winner = this.seats.findIndex(x => x.alive); this.phase = 'over'; this.seq++;
         this.say(`${this.seats[this.winner].name} 是最後的倖存者！`);
+      } else if (humans.length && !humans.some(x => x.alive)) {
+        this.winner = -1; this.phase = 'over'; this.seq++;
+        this.say(`所有真人玩家都已出局，牌局結束。仍存活：${this.seats.filter(x => x.alive).map(x => x.name).join('、')}。`);
       } else if (!this.nextShot()) {
         const A = this.after || {};
         if (A.greed >= 0 && this.seats[A.greed].alive) { this.seats[A.greed].greedRounds = 2; this.say(`${this.seats[A.greed].name} 熬過貪婪的兩槍！接下來兩輪手上至少有 3 張 Joker。`); }
@@ -1565,7 +1569,7 @@ const G3 = (function () {
   function overScene(v) {
     endScene(); cm.mode = 'over'; cm.t0 = time; cm.seat = v.winner; AU.heartbeat(false); AU.muffle(false, .5); AU.duck(.7, 1);
     chars.forEach((c, i) => { if (i === v.winner) { c.pose = 'cheer'; c.poseT = 1e9; c.root.visible = true; } else if (c.pose !== 'rest') c.pose = 'rest'; });
-    AU.sfx(v.winner === me ? 'win' : 'lose');
+    AU.sfx(v.winner >= 0 && v.winner === me ? 'win' : 'lose');
   }
 
   /* ---------- camera ---------- */
@@ -2122,7 +2126,10 @@ function animOver(v) {
   const btns = mode === 'solo' ? '<button class="btn primary" data-o="again">再來一局</button><button class="btn" data-o="menu">回主選單</button>'
     : mode === 'host' ? '<button class="btn primary" data-o="again">再來一局</button><button class="btn" data-o="lobby">回大廳</button><button class="btn" data-o="menu">離開</button>'
       : '<span style="opacity:.8">等待房主決定下一步…</span><button class="btn" data-o="menu">離開</button>';
-  $('#ovl').innerHTML = `<div class="ov"><div class="big-end">${iWon ? '🏆' : w.avatar}</div><h3>${iWon ? '你是最後的倖存者！' : esc(w.name) + ' 活到了最後'}</h3>
+  const alive = v.seats.filter(s => s.alive), humansN = v.seats.filter(s => s.kind === 'human').length;
+  const head = w ? `<div class="big-end">${iWon ? '🏆' : w.avatar}</div><h3>${iWon ? '你是最後的倖存者！' : esc(w.name) + ' 活到了最後'}</h3>`
+    : `<div class="big-end">💀</div><h3>${humansN > 1 ? '所有真人玩家都出局了' : '你已出局，牌局結束'}</h3><div style="opacity:.8">仍存活：${alive.map(s => `${s.avatar} ${esc(s.name)}`).join('、')}</div>`;
+  $('#ovl').innerHTML = `<div class="ov">${head}
     <div style="opacity:.75">共進行 ${v.round} 輪</div><div class="row" style="justify-content:center">${btns}</div></div>`;
   S2(iWon ? 'win' : 'sting');
 }
@@ -2321,9 +2328,9 @@ lockOrient(); document.addEventListener('pointerdown', lockOrient, { once: true 
 
 </script><style>#appver{position:fixed;left:8px;bottom:calc(4px + env(safe-area-inset-bottom,0px));font-size:10px;opacity:.35;z-index:90;pointer-events:none;color:#f3e7cf;font-family:system-ui}
 #updbar{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:95;background:#ff9a3c;color:#2a1206;border:0;border-radius:99px;padding:9px 18px;font-weight:700;font-size:14px;box-shadow:0 6px 20px rgba(0,0,0,.6);cursor:pointer;display:none}</style>
-<div id="appver">v20261110-011959</div><button id="updbar">🔄 有新版本，點此更新</button>
+<div id="appver">v20261110-012535</div><button id="updbar">🔄 有新版本，點此更新</button>
 <script>(function(){
-var APP_VER='20261110-011959',bar=document.getElementById('updbar'),busy=false;
+var APP_VER='20261110-012535',bar=document.getElementById('updbar'),busy=false;
 function onMenu(){var m=document.getElementById('s-menu');return m&&m.classList.contains('active');}
 var NEWV='';function apply(){if(busy)return;busy=true;try{sessionStorage.setItem('lb-upd',NEWV)}catch(e){}var go=function(){location.replace(location.pathname+'?v='+encodeURIComponent(NEWV||Date.now()))};
  if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration){navigator.serviceWorker.getRegistration().then(function(r){if(r){r.update().then(go,go)}else go()},go)}else go();}
