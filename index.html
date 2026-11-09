@@ -1835,5 +1835,21 @@ $('#mp-code').addEventListener('input', e => digits4(e.target));
 $('#mp-rand').onclick = () => { $('#mp-newcode').value = randomCode(); };
 $('#mp-newcode').addEventListener('keydown', e => { if (e.key === 'Enter') $('#mp-create').click(); });
 
-</script><script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}</script>
+</script><style>#appver{position:fixed;left:8px;bottom:calc(4px + env(safe-area-inset-bottom,0px));font-size:10px;opacity:.35;z-index:90;pointer-events:none;color:#f3e7cf;font-family:system-ui}
+#updbar{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:95;background:#ff9a3c;color:#2a1206;border:0;border-radius:99px;padding:9px 18px;font-weight:700;font-size:14px;box-shadow:0 6px 20px rgba(0,0,0,.6);cursor:pointer;display:none}</style>
+<div id="appver">v20261110-001829</div><button id="updbar">🔄 有新版本，點此更新</button>
+<script>(function(){
+var APP_VER='20261110-001829',bar=document.getElementById('updbar'),busy=false;
+function onMenu(){var m=document.getElementById('s-menu');return m&&m.classList.contains('active');}
+var NEWV='';function apply(){if(busy)return;busy=true;try{sessionStorage.setItem('lb-upd',NEWV)}catch(e){}var go=function(){location.replace(location.pathname+'?v='+encodeURIComponent(NEWV||Date.now()))};
+ if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration){navigator.serviceWorker.getRegistration().then(function(r){if(r){r.update().then(go,go)}else go()},go)}else go();}
+function found(v){NEWV=v;var tried='';try{tried=sessionStorage.getItem('lb-upd')||''}catch(e){}if(onMenu()&&tried!==v)apply();else bar.style.display='block';}
+bar.onclick=apply;
+function check(){if(location.protocol.indexOf('http')!==0)return;fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==APP_VER)found(j.v)}).catch(function(){});}
+if('serviceWorker' in navigator){addEventListener('load',function(){
+ navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(function(r){r.update();setInterval(function(){r.update()},300000)}).catch(function(){});});}
+addEventListener('load',check);setInterval(check,180000);
+document.addEventListener('visibilitychange',function(){if(!document.hidden)check()});
+addEventListener('focus',check);
+})();</script>
 </body></html>
