@@ -1,5 +1,5 @@
-// v20261110-132221 — network-first, bypasses the HTTP cache so updates show up immediately
-const CACHE='app-20261110-132221';
+// v20261110-202833 — network-first, bypasses the HTTP cache so updates show up immediately
+const CACHE='app-20261110-202833';
 const CORE=['./','./index.html','./manifest.json','./icon-180.png','./icon-192.png','./icon-512.png'];
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>Promise.all(CORE.map(u=>fetch(u,{cache:'reload'}).then(r=>r.ok&&c.put(u,r)).catch(()=>{})))))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
