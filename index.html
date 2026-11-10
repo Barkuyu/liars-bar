@@ -643,6 +643,19 @@ body:not(.m3d) #app{background:linear-gradient(rgba(8,4,3,.55),rgba(8,4,3,.75)),
 @media (max-aspect-ratio:3/4){body:not(.m3d) #app{background:linear-gradient(rgba(8,4,3,.55),rgba(8,4,3,.75)),var(--bar-tall) center/cover no-repeat}}
 @media (max-width:760px){.np .plate{flex-direction:column;gap:2px}.np .npbody{align-items:center}}
 @media (max-width:760px){body:not(.m3d) #topbar{flex-wrap:wrap;gap:6px}body:not(.m3d) .tools{flex:1 1 100%;display:flex;gap:4px}body:not(.m3d) .tools button{flex:1;font-size:11.5px;white-space:nowrap}}
+
+/* iOS fix: never put filter on a scrolling box; the frame stays put and an inner layer scrolls */
+.panel,.modal .box,#tokask .tkbox,.ov .ovbox,.cap,.roundbanner,body.m3d #hint,#toast,.tkgain,body.m3d #claim{filter:none;box-shadow:0 14px 32px rgba(0,0,0,.62),0 2px 4px rgba(0,0,0,.5);border-radius:20px}
+body.m3d #hint,#toast,.tkgain,body.m3d #claim{border-radius:12px}
+.modal .box,#tokask .tkbox{overflow:hidden;display:flex;flex-direction:column;max-height:86vh;max-height:86dvh}
+.modal .box>.boxin,#tokask .tkbox>.boxin{overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;min-height:0;flex:1 1 auto;padding:4px 6px;transform:translateZ(0)}
+#tokask .tkbox{max-height:90%}
+.modal .box>.boxfoot{flex:none;margin:8px 0 0;display:flex;justify-content:center}
+/* 2D fallback: token bar sits in the bottom flow, not over the buttons */
+body:not(.m3d) #tokbar{position:static;flex-direction:row;align-items:center;gap:6px;order:3}
+body:not(.m3d) #tokbar .tklbl{display:none}
+@media (max-width:760px){body:not(.m3d) #tokbar{order:0;width:100%;justify-content:center}}
+@media (max-width:760px){body.m3d #logp{top:calc(var(--st,0px) + 152px);max-height:46%}}
 </style><meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -1894,6 +1907,7 @@ const G3 = (function () {
   return api;
 })();
 
+var quitArm = 0;
 /* ===== UI, audio, networking glue ===== */
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const esc = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -1932,7 +1946,7 @@ function act(m) { if (!ctx) return; if (ctx.mode === 'guest') ctx.net.send(m); e
 
 function leaveAll(msg) {
   if (ctx) { try { ctx.host && ctx.host.close(); } catch (e) { } try { ctx.peer && ctx.peer.destroy(); } catch (e) { } try { ctx.net && ctx.net.close(); } catch (e) { } }
-  ctx = null; view = null; lastSeq = -1; lastTokN = -1; closeAsk(); $('#tokfx').innerHTML = ''; lastRound = 0; sel.clear(); clearOv(); bars(false); AU.heartbeat(false); AU.muffle(false, .2); AU.duck(1, .3); if (G3on) G3.menu(); show('s-menu'); if (msg) toast(msg, 3500);
+  quitArm = 0; ctx = null; view = null; lastSeq = -1; lastTokN = -1; closeAsk(); $('#tokfx').innerHTML = ''; lastRound = 0; sel.clear(); clearOv(); bars(false); AU.heartbeat(false); AU.muffle(false, .2); AU.duck(1, .3); if (G3on) G3.menu(); show('s-menu'); if (msg) toast(msg, 3500);
 }
 
 /* ---------- networking (PeerJS) ---------- */
@@ -2166,7 +2180,6 @@ $('#t-log').onclick = () => { const p = $('#logp'); p.classList.toggle('on'); if
 
 $('#gl').addEventListener('pointerdown', e => { if (!G3on || !view) return; kbUsed = false; const id = G3.pick(e.clientX, e.clientY); const my = view.phase === 'turn' && view.turn === view.mySeat; if (id != null && my) { cursor = Math.max(0, view.myHand.findIndex(c => c.id === id)); toggle(id); } });
 $('#gl').addEventListener('pointermove', e => { if (!G3on || !view) return; kbUsed = false; const r = G3.hover(e.clientX, e.clientY); if (r !== undefined) G3.sync(view, sel, -1); });
-let quitArm = 0;
 $('#t-quit').onclick = () => {
   if (Date.now() - quitArm < 3000) return leaveAll();
   quitArm = Date.now(); toast('再按一次「離開」確認離開牌局');
@@ -2262,6 +2275,7 @@ function animShoot(v) {
   }, 1900);
 }
 function animOver(v) {
+  { const bf = $('#bloodfx'); if (bf) { bf.style.transition = 'opacity .5s'; bf.style.opacity = '0'; setTimeout(() => bf.remove(), 600); } }
   clearOv(); const w = v.seats[v.winner], iWon = v.winner === v.mySeat;
   const mode = ctx && ctx.mode;
   const btns = mode === 'solo' ? '<button class="btn primary" data-o="again">再來一局</button><button class="btn" data-o="menu">回主選單</button>'
@@ -2355,7 +2369,7 @@ let askKind = '', askKey = '';
 function closeAsk() { askKind = ''; askKey = ''; const a = $('#tokask'); if (a) { a.innerHTML = ''; a.className = ''; } }
 function openAsk(kind, key, html, delay) {
   if (askKind === kind && askKey === key) return;
-  askKind = kind; askKey = key; const a = $('#tokask'); a.innerHTML = `<div class="tkbox">${html}</div>`; a.className = 'on' + (delay ? ' late' : '');
+  askKind = kind; askKey = key; const a = $('#tokask'); a.innerHTML = `<div class="tkbox"><div class="boxin">${html}</div></div>`; a.className = 'on' + (delay ? ' late' : '');
   AU.sfx('ui');
 }
 function askRespond(v) {
@@ -2468,11 +2482,14 @@ document.body.classList.toggle('phone', isPhone);
 function lockOrient() { if (!isPhone) return; try { const o = screen.orientation; if (o && o.lock) o.lock('portrait').catch(() => { }); } catch (e) { } }
 lockOrient(); document.addEventListener('pointerdown', lockOrient, { once: true });
 
+/* wrap modal contents so the framed box stays fixed and only the inner layer scrolls (iOS repaint fix) */
+document.querySelectorAll('.modal .box').forEach(b => { if (b.querySelector(':scope > .boxin')) return; const w = document.createElement('div'); w.className = 'boxin'; while (b.firstChild) w.appendChild(b.firstChild); b.appendChild(w); const cl = w.querySelector('#rules-close, #set-close'); if (cl) { const row = cl.closest('.row') || cl; row.classList.add('boxfoot'); b.appendChild(row); } });
+
 </script><style>#appver{position:fixed;left:8px;bottom:calc(4px + env(safe-area-inset-bottom,0px));font-size:10px;opacity:.35;z-index:90;pointer-events:none;color:#f3e7cf;font-family:system-ui}
 #updbar{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:95;background:#ff9a3c;color:#2a1206;border:0;border-radius:99px;padding:9px 18px;font-weight:700;font-size:14px;box-shadow:0 6px 20px rgba(0,0,0,.6);cursor:pointer;display:none}</style>
-<div id="appver">v20261110-094711</div><button id="updbar">🔄 有新版本，點此更新</button>
+<div id="appver">v20261110-122726</div><button id="updbar">🔄 有新版本，點此更新</button>
 <script>(function(){
-var APP_VER='20261110-094711',bar=document.getElementById('updbar'),busy=false;
+var APP_VER='20261110-122726',bar=document.getElementById('updbar'),busy=false;
 function onMenu(){var m=document.getElementById('s-menu');return m&&m.classList.contains('active');}
 var NEWV='';function apply(){if(busy)return;busy=true;try{sessionStorage.setItem('lb-upd',NEWV)}catch(e){}var go=function(){location.replace(location.pathname+'?v='+encodeURIComponent(NEWV||Date.now()))};
  if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration){navigator.serviceWorker.getRegistration().then(function(r){if(r){r.update().then(go,go)}else go()},go)}else go();}
