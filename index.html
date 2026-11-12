@@ -6239,9 +6239,9 @@ document.querySelectorAll('.modal .box').forEach(b => { if (b.querySelector(':sc
 
 </script><style>#appver{position:fixed;left:8px;bottom:calc(4px + env(safe-area-inset-bottom,0px));font-size:10px;opacity:.35;z-index:90;pointer-events:none;color:#f3e7cf;font-family:system-ui}
 #updbar{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:95;background:#ff9a3c;color:#2a1206;border:0;border-radius:99px;padding:9px 18px;font-weight:700;font-size:14px;box-shadow:0 6px 20px rgba(0,0,0,.6);cursor:pointer;display:none}</style>
-<div id="appver">v20261112-111918</div><button id="updbar">🔄 有新版本，點此更新</button>
+<div id="appver">v20261112-111925</div><button id="updbar">🔄 有新版本，點此更新</button>
 <script>(function(){
-var APP_VER='20261112-111918',bar=document.getElementById('updbar'),busy=false;
+var APP_VER='20261112-111925',bar=document.getElementById('updbar'),busy=false;
 function onMenu(){var m=document.getElementById('s-menu');return m&&m.classList.contains('active');}
 var NEWV='';function apply(){if(busy)return;busy=true;try{sessionStorage.setItem('lb-upd',NEWV)}catch(e){}var go=function(){location.replace(location.pathname+'?v='+encodeURIComponent(NEWV||Date.now()))};
  if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration){navigator.serviceWorker.getRegistration().then(function(r){if(r){r.update().then(go,go)}else go()},go)}else go();}
